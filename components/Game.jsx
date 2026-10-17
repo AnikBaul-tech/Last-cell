@@ -13,7 +13,11 @@ import { roomApi } from '@/lib/client/api';
 // Reveal timeline (ms from the start of the reveal phase)
 const STAGE_AT = [0, 500, 1700, 2800]; // 0 start positions, 1 move, 2 shots, 3 deaths
 const RESULT_AT = 4600; // winner overlay appears
-const KEY_DIR = { arrowup: 'up', arrowdown: 'down', arrowleft: 'left', arrowright: 'right', w: 'up', s: 'down', a: 'left', d: 'right' };
+const KEY_DIR = {
+  arrowup: 'up', arrowdown: 'down', arrowleft: 'left', arrowright: 'right',
+  w: 'up', s: 'down', a: 'left', d: 'right',
+  q: 'upleft', e: 'upright', z: 'downleft', c: 'downright', // diagonals
+};
 const keyOf = (to, dir) => `${to.x},${to.y},${dir ?? '-'}`;
 
 function playRevealSounds(stage, result) {
@@ -205,7 +209,7 @@ export default function Game({ code, room, players, me, myPlayer, isHost, sessio
       const at = res.round === 0 || stage >= 1 ? rp.to : rp.from || rp.to;
       avatars.push({
         key: rp.id,
-        emoji: av.emoji,
+        src: av.src,
         color: av.color,
         label: pl?.name,
         x: at.x,
@@ -231,7 +235,7 @@ export default function Game({ code, room, players, me, myPlayer, isHost, sessio
     avatars = [
       {
         key: myId,
-        emoji: av.emoji,
+        src: av.src,
         color: av.color,
         label: myPlayer.name,
         x: target.x,
@@ -246,7 +250,7 @@ export default function Game({ code, room, players, me, myPlayer, isHost, sessio
   } else if (!iAmAlive && me?.others) {
     avatars = me.others.map((o) => {
       const av = getAvatar(byId[o.id]?.avatar);
-      return { key: o.id, emoji: av.emoji, color: av.color, label: byId[o.id]?.name, x: o.x, y: o.y, ghost: true };
+      return { key: o.id, src: av.src, color: av.color, label: byId[o.id]?.name, x: o.x, y: o.y, ghost: true };
     });
   }
 
@@ -271,11 +275,16 @@ export default function Game({ code, room, players, me, myPlayer, isHost, sessio
     setResetBusy(false);
   };
 
+  // [direction, arrow rotation in degrees (0 = pointing up), label, grid area]
   const DIR_BTN = [
-    ['up', '▲', 'Shoot up', 'r1 c2'],
-    ['left', '◀', 'Shoot left', 'r2 c1'],
-    ['right', '▶', 'Shoot right', 'r2 c3'],
-    ['down', '▼', 'Shoot down', 'r3 c2'],
+    ['upleft', -45, 'Shoot up-left', 'r1 c1'],
+    ['up', 0, 'Shoot up', 'r1 c2'],
+    ['upright', 45, 'Shoot up-right', 'r1 c3'],
+    ['left', -90, 'Shoot left', 'r2 c1'],
+    ['right', 90, 'Shoot right', 'r2 c3'],
+    ['downleft', -135, 'Shoot down-left', 'r3 c1'],
+    ['down', 180, 'Shoot down', 'r3 c2'],
+    ['downright', 135, 'Shoot down-right', 'r3 c3'],
   ];
 
   return (
@@ -312,9 +321,9 @@ export default function Game({ code, room, players, me, myPlayer, isHost, sessio
         <aside className="side">
           {canAct && (
             <section className="card controls">
-              <p className="hint">Tap a glowing cell to move, then choose where to shoot. Everyone else is hidden until the reveal.</p>
+              <p className="hint">Tap a glowing cell to move, then choose where to shoot (8 directions, diagonals included). Everyone else is hidden until the reveal.</p>
               <div className="dpad" role="group" aria-label="Shooting direction">
-                {DIR_BTN.map(([d, glyph, label, area]) => (
+                {DIR_BTN.map(([d, deg, label, area]) => (
                   <button
                     key={d}
                     type="button"
@@ -323,7 +332,9 @@ export default function Game({ code, room, players, me, myPlayer, isHost, sessio
                     aria-pressed={sel.dir === d}
                     onClick={() => chooseDir(d, true)}
                   >
-                    {glyph}
+                    <svg className="glyph" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" style={{ transform: `rotate(${deg}deg)` }}>
+                      <path d="M12 20V5M5.5 11.5L12 5l6.5 6.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </button>
                 ))}
                 <button
@@ -339,7 +350,7 @@ export default function Game({ code, room, players, me, myPlayer, isHost, sessio
               <button className="btn primary big" disabled={busy || !dirty} onClick={() => lock()}>
                 {busy ? 'Locking…' : !dirty ? 'Locked in' : lockedKey ? 'Update move' : 'Lock in'}
               </button>
-              <p className="hint">Locked: {room.locked_count} / {aliveCount} · Keys: arrows or WASD, Enter</p>
+              <p className="hint">Locked: {room.locked_count} / {aliveCount} · Keys: arrows/WASD, Q E Z C for diagonals, Enter</p>
               {note && <p className="error" role="alert">{note}</p>}
             </section>
           )}

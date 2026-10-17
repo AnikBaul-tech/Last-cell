@@ -1,5 +1,6 @@
 'use client';
 import { AVATARS } from '@/lib/game/avatars';
+import Avatar from './Avatar';
 
 export default function AvatarPicker({ value, onChange, taken = [] }) {
   return (
@@ -20,7 +21,7 @@ export default function AvatarPicker({ value, onChange, taken = [] }) {
             style={{ '--c': a.color }}
             onClick={() => onChange(a.id)}
           >
-            <span>{a.emoji}</span>
+            <Avatar avatar={a} />
           </button>
         );
       })}

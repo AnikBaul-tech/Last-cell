@@ -1,11 +1,12 @@
 'use client';
 import { inBounds } from '@/lib/game/engine';
 
-const ANGLE = { right: 0, down: 90, left: 180, up: 270 };
+// barrel rotation (degrees, clockwise from pointing right)
+const ANGLE = { right: 0, downright: 45, down: 90, downleft: 135, left: 180, upleft: 225, up: 270, upright: 315 };
 
 /**
  * Presentational board. It knows nothing about game phases:
- *  avatars: [{ key, emoji, color, x, y, dir, dead, fell, me, danger, fast, pop }]
+ *  avatars: [{ key, src, color, x, y, dir, dead, fell, me, danger, fast, pop }]
  *  beams:   [{ key, from:{x,y}, end:{x,y}, color, hit }]
  *  reach:   Set of "x,y" cells to highlight   origin: {x,y} dotted marker
  */
@@ -79,7 +80,9 @@ export default function Board({ size, bounds, avatars = [], beams = [], reach, o
               }}
             >
               {a.dir && <span className="barrel" style={{ transform: `rotate(${ANGLE[a.dir]}deg)` }} />}
-              <span className="face">{a.emoji}</span>
+              <span className="face">
+                <img className="avatar-img" src={a.src} alt="" draggable={false} />
+              </span>
             </div>
           );
         })}

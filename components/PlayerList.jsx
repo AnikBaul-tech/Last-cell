@@ -1,5 +1,6 @@
 'use client';
 import { getAvatar } from '@/lib/game/avatars';
+import Avatar from './Avatar';
 
 export default function PlayerList({ players, hostId, myId, showStatus = false }) {
   return (
@@ -9,7 +10,9 @@ export default function PlayerList({ players, hostId, myId, showStatus = false }
         const out = showStatus && !p.is_alive;
         return (
           <li key={p.id} className={`player${out ? ' out' : ''}`} style={{ '--c': av.color }}>
-            <span className="player-face">{av.emoji}</span>
+            <span className="player-face">
+              <Avatar avatar={av} />
+            </span>
             <span className="player-name">
               {p.name}
               {p.id === myId && <em className="tag">you</em>}

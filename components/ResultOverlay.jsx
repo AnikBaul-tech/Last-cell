@@ -1,5 +1,6 @@
 'use client';
 import { getAvatar } from '@/lib/game/avatars';
+import Avatar from './Avatar';
 
 export default function ResultOverlay({ winner, draw, abandoned, iWon, isHost, onPlayAgain, onLeave, onClose, busy }) {
   const av = winner ? getAvatar(winner.avatar) : null;
@@ -8,7 +9,7 @@ export default function ResultOverlay({ winner, draw, abandoned, iWon, isHost, o
       <div className="result">
         {winner ? (
           <>
-            <div className="trophy" style={{ '--c': av.color }}>{av.emoji}</div>
+            <div className="trophy" style={{ '--c': av.color }}><Avatar avatar={av} /></div>
             <h2>{iWon ? 'You are the last one standing' : `${winner.name} is the last one standing`}</h2>
             {abandoned && <p className="muted">Everyone else left the room.</p>}
           </>
